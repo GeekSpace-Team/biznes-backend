@@ -30,7 +30,7 @@ export class DataService {
       data.type = createDatumDto.type;
       data.order = createDatumDto.order;
       data.url = createDatumDto.url;
-      data.assetId = createDatumDto.assetId;
+      if (createDatumDto.assetId) data.assetId = createDatumDto.assetId;
       return await this.usersRepository.save(data);
     } catch (err) {
       throw new BadRequestException(err.message);
@@ -38,10 +38,19 @@ export class DataService {
   }
 
   async findAll() {
-    return this.usersRepository.find({
+    const result = await this.usersRepository.find({
       relations: {
         asset: true,
       },
+    });
+    return result.map((it) => {
+      return {
+        ...it,
+        asset: {
+          ...it.asset,
+          url: `${process.env.IMAGE_URL}/${it.asset.url}`,
+        },
+      };
     });
   }
 

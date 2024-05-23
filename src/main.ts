@@ -11,6 +11,7 @@ async function bootstrap() {
     preflightContinue: false,
     optionsSuccessStatus: 204,
   });
+
   await app.listen(process.env.PORT);
 }
 bootstrap();

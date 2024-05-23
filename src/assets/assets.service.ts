@@ -3,6 +3,7 @@ import { Asset } from './entities/asset.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { unlink } from 'fs';
+import { extname } from 'path';
 
 @Injectable()
 export class AssetsService {
@@ -19,10 +20,16 @@ export class AssetsService {
   }
 
   async findAll() {
-    return await this.usersRepository.find({
+    const data = await this.usersRepository.find({
       order: {
         id: 'DESC',
       },
+    });
+    return data.map((it) => {
+      return {
+        ...it,
+        url: `${process.env.IMAGE_URL}/${it.url}`,
+      };
     });
   }
 
@@ -41,3 +48,13 @@ export class AssetsService {
     }
   }
 }
+
+export const editFileName = (req, file, callback) => {
+  const name = file.originalname.split('.')[0];
+  const fileExtName = extname(file.originalname);
+  const randomName = Array(4)
+    .fill(null)
+    .map(() => Math.round(Math.random() * 16).toString(16))
+    .join('');
+  callback(null, `${name}-${randomName}${fileExtName}`);
+};

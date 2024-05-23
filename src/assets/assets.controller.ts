@@ -7,8 +7,9 @@ import {
   UseInterceptors,
   UploadedFile,
 } from '@nestjs/common';
-import { AssetsService } from './assets.service';
+import { AssetsService, editFileName } from './assets.service';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
 
 @Controller('assets')
 export class AssetsController {
@@ -17,7 +18,10 @@ export class AssetsController {
   @Post()
   @UseInterceptors(
     FileInterceptor('file', {
-      dest: './upload',
+      storage: diskStorage({
+        destination: './upload',
+        filename: editFileName,
+      }),
     }),
   )
   create(@UploadedFile() file: Express.Multer.File) {

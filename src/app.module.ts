@@ -6,17 +6,23 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Asset } from './assets/entities/asset.entity';
 import { Datum } from './data/entities/datum.entity';
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { join } from 'path';
 
 @Module({
   imports: [
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, '..', ''),
+      renderPath: 'upload',
+    }),
     ScheduleModule.forRoot(),
     ConfigModule.forRoot(),
     TypeOrmModule.forRoot({
       type: 'postgres',
-      host: process.env.HOST,
+      host: process.env.DB_HOST,
       port: 5432,
-      username: process.env.USERNAME,
-      password: process.env.PASSWORD,
+      username: process.env.DB_USERNAME,
+      password: process.env.DB_PASSWORD,
       database: process.env.DB,
       entities: [Asset, Datum],
       synchronize: process.env.SYNC == 'true',
@@ -27,4 +33,8 @@ import { Datum } from './data/entities/datum.entity';
   controllers: [],
   providers: [],
 })
-export class AppModule {}
+export class AppModule {
+  constructor() {
+    console.log(process.env.DB_USERNAME);
+  }
+}
