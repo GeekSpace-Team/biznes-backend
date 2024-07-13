@@ -26,6 +26,11 @@ export class DataController {
     return this.dataService.findAll();
   }
 
+  @Get('services')
+  findServices() {
+    return this.dataService.findServices();
+  }
+
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateDatumDto: UpdateDatumDto) {
     return this.dataService.update(+id, updateDatumDto);

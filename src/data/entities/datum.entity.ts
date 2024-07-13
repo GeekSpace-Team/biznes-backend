@@ -22,6 +22,7 @@ export enum DataType {
   SERVICE_TITLE = 'service_title',
   SERVICE_ITEM = 'service_item',
   CONTACT_THEME = 'contact_theme',
+  SERVICE_SLIDE = 'service_slide',
 }
 
 @Entity()
@@ -67,14 +68,24 @@ export class Datum {
   })
   order: number;
 
+  @ManyToOne(() => Datum, (data) => data.parent)
+  parent?: Datum;
+
   @Column()
   url: string;
 
   @ManyToOne(() => Asset, (asset) => asset.data)
   asset?: Asset;
 
-  @Column()
+  @Column({
+    default: null,
+  })
   assetId?: number;
+
+  @Column({
+    default: null,
+  })
+  parentId?: number;
 
   @CreateDateColumn({ name: 'created_at' }) 'created_at': Date;
   @UpdateDateColumn({ name: 'updated_at' }) 'updated_at': Date;

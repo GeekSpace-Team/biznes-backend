@@ -6,7 +6,7 @@ import {
 import { CreateDatumDto } from './dto/create-datum.dto';
 import { UpdateDatumDto } from './dto/update-datum.dto';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Datum } from './entities/datum.entity';
+import { DataType, Datum } from './entities/datum.entity';
 import { Repository } from 'typeorm';
 
 @Injectable()
@@ -31,6 +31,7 @@ export class DataService {
       data.order = createDatumDto.order;
       data.url = createDatumDto.url;
       if (createDatumDto.assetId) data.assetId = createDatumDto.assetId;
+      if (createDatumDto.parentId) data.parentId = createDatumDto.parentId;
       return await this.usersRepository.save(data);
     } catch (err) {
       throw new BadRequestException(err.message);
@@ -42,16 +43,70 @@ export class DataService {
       relations: {
         asset: true,
       },
+      order: {
+        order: 'ASC',
+      },
     });
     return result.map((it) => {
       return {
         ...it,
         asset: {
           ...it.asset,
-          url: `${process.env.IMAGE_URL}/${it.asset.url}`,
+          url: it.asset ? `${process.env.IMAGE_URL}/${it.asset.url}` : '',
         },
       };
     });
+  }
+
+  async findServices() {
+    const result = await this.usersRepository.find({
+      relations: {
+        asset: true,
+      },
+      where: {
+        type: DataType.SERVICE_SLIDE,
+      },
+      order: {
+        order: 'ASC',
+      },
+    });
+    const slides: any[] = [];
+    for (let i = 0; i < result.length; i++) {
+      const it = result[i];
+      const cards = await this.usersRepository.find({
+        relations: {
+          asset: true,
+        },
+        where: {
+          type: DataType.SERVICE_ITEM,
+          parentId: it.id,
+        },
+        order: {
+          order: 'ASC',
+        },
+      });
+      const fixedCards = cards.map((v) => {
+        return {
+          ...v,
+          asset: {
+            ...v.asset,
+            url: it.asset ? `${process.env.IMAGE_URL}/${it.asset.url}` : '',
+          },
+        };
+      });
+      slides.push({
+        ...it,
+        cards: fixedCards,
+        asset: {
+          ...it.asset,
+          url: it.asset ? `${process.env.IMAGE_URL}/${it.asset.url}` : '',
+        },
+      });
+    }
+    return {
+      count: slides.length,
+      slides: slides,
+    };
   }
 
   async update(id: number, createDatumDto: UpdateDatumDto) {
@@ -74,6 +129,7 @@ export class DataService {
         if (createDatumDto.order) data.order = createDatumDto.order;
         if (createDatumDto.url) data.url = createDatumDto.url;
         if (createDatumDto.assetId) data.assetId = createDatumDto.assetId;
+        if (createDatumDto.parentId) data.parentId = createDatumDto.parentId;
         return await this.usersRepository.update({ id: id }, data);
       } else {
         throw new NotFoundException('Data Not found for given ID');

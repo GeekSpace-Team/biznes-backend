@@ -34,7 +34,8 @@ export class CreateDatumDto {
   order: number = 0;
 
   @IsString()
-  url: string;
+  url: string = '';
 
-  assetId?: number;
+  assetId?: number | undefined;
+  parentId?: number | undefined;
 }
