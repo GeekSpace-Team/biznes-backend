@@ -90,7 +90,7 @@ export class DataService {
           ...v,
           asset: {
             ...v.asset,
-            url: it.asset ? `${process.env.IMAGE_URL}/${it.asset.url}` : '',
+            url: v.asset ? `${process.env.IMAGE_URL}/${v.asset.url}` : '',
           },
         };
       });
